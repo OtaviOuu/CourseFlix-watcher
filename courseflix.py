@@ -8,8 +8,13 @@ class CourseFlixManager:
         self.base_url = "https://courseflix.net/"
 
     def _load_stored_courses(self) -> list:
-        with open("courses.json", "r") as file:
-            return json.load(file)["courses"]
+        try:
+            with open("courses.json", "r") as file:
+                return json.load(file)["courses"]
+        except FileNotFoundError:
+            with open("courses.json", "w") as file:
+                json.dump({"courses": []}, file)
+                return []
 
     def _get_selector(self, html_text) -> Selector:
         return Selector(html_text)
@@ -28,9 +33,9 @@ class CourseFlixManager:
     def get_new_courses(self) -> list:
         response = requests.get(url=f"{self.base_url}/course?page=1")
         html = self._get_selector(response.text)
-        courses_links = html.css(
-            "a[href^='https://courseflix.net/course/'] span.truncate::text"
-        ).getall()
+
+        title_selector = "a[href^='https://courseflix.net/course/'] span.truncate::text"
+        courses_links = html.css(title_selector).getall()
 
         stored_courses = self._load_stored_courses()
         new_courses = [

@@ -2,16 +2,28 @@ import schedule
 import time
 
 from courseflix import CourseFlixManager
+from telegrambot import TelegramBot
 
 
 def job():
+    bot = TelegramBot()
     manager = CourseFlixManager()
+
     new_courses = manager.get_new_courses()
-    print(new_courses)
+
+    if new_courses:
+        message = "🚀 Novos cursos foram encontrados! 🚀\n\n\n"
+        for course in new_courses:
+            message += f"📚 {course}\n\n"
+
+        bot.send_notification(message)
+    else:
+        print("Nenhum curso novo encontrado.")
 
 
 if __name__ == "__main__":
-    schedule.every(2).seconds.do(job)
+
+    schedule.every(30).minutes.do(job)
 
     while True:
         schedule.run_pending()
